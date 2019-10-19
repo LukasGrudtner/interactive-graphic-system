@@ -5,7 +5,7 @@ import math
 def translate(dx, dy):
     return np.array([[1, 0, 0],
                      [0, 1, 0],
-                     [dx, dy, 0]])
+                     [dx, dy, 1]])
 
 
 def scale(sx, sy):

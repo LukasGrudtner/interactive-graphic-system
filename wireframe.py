@@ -1,7 +1,6 @@
 import transformations
 from point import Point
 
-
 class Wireframe:
     def __init__(self):
         self.points = []
@@ -68,14 +67,36 @@ class Wireframe:
     def last_point(self):
         return self.points[-1]
 
+    def center(self):
+        cx = 0
+        cy = 0
+        cz = 0
+        for point in self.points:
+            cx += point.x()
+            cy += point.y()
+            cz += point.z()
+
+        cx = cx/len(self.points)
+        cy = cy/len(self.points)
+        cz = cz/len(self.points)
+
+        return Point(cx, cy, cz)
+
     def translate(self, dx, dy):
         self.__transform__(transformations.translate(dx, dy))
 
     def scale(self, sx, sy):
         self.__transform__(transformations.scale(sx, sy))
 
-    def rotate(self, degrees):
-        self.__transform__(transformations.rotate(degrees))
+    def rotate(self, degrees, center):
+        first_translate = transformations.translate(-center.x(), -center.y())
+        rotate = transformations.rotate(degrees)
+        last_translate = transformations.translate(center.x(), center.y())
+
+        # Concatena as três operações em uma só
+        transformation = transformations.concat(transformations.concat(first_translate, rotate), last_translate)
+
+        self.__transform__(transformation)
 
     def __transform__(self, transformation):
         new_points = []

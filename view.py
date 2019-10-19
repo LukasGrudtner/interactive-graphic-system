@@ -114,7 +114,7 @@ class Handler:
         degrees = float(degree_field.get_text())
 
         active_object = get_active_object()
-        active_object.rotate(-degrees)
+        active_object.rotate(-degrees, get_center_rotate())
         window_widget.queue_draw()
 
     def on_rotate_left(self, btn):
@@ -122,7 +122,7 @@ class Handler:
         degrees = float(degree_field.get_text())
 
         active_object = get_active_object()
-        active_object.rotate(degrees)
+        active_object.rotate(degrees, get_center_rotate())
         window_widget.queue_draw()
 
     def on_insert_point(self, window):
@@ -353,6 +353,41 @@ def validate_creation_object():
     if points_combobox.get_active() < 0:
         return False
     return True
+
+
+def get_center_rotate():
+    radioButtonRotationWorld = gtkBuilder.get_object('idRotationWorld')
+    radioButtonRotationObject = gtkBuilder.get_object('idRotationObject')
+    radioButtonRotationPoint = gtkBuilder.get_object('idRotationPoint')
+
+    if radioButtonRotationWorld.get_active():
+        return rotation_center_world()
+    if radioButtonRotationObject.get_active():
+        return rotation_center_object()
+    if radioButtonRotationPoint.get_active():
+        return rotation_center_point()
+    return None
+
+
+def rotation_center_world():
+    return Point(0, 0, 0)
+
+
+def rotation_center_object():
+    active_object = get_active_object()
+    return active_object.center()
+
+
+def rotation_center_point():
+    x_field = gtkBuilder.get_object('idRotationPointX')
+    y_field = gtkBuilder.get_object('idRotationPointY')
+    z_field = gtkBuilder.get_object('idRotationPointZ')
+
+    x = float(x_field.get_text())
+    y = float(y_field.get_text())
+    z = float(z_field.get_text())
+
+    return Point(x, y, z)
 
 
 def draw(object):
