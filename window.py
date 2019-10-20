@@ -45,6 +45,12 @@ class Window:
     def objects(self):
         return self.__objects
 
+    def center(self):
+        cx = (self.__x_max - self.__x_min)/2
+        cy = (self.__y_max - self.__y_min)/2
+
+        return Point(cx, cy, 1)
+
     def panning_up(self, step):
         abs_step = (self.y_max() - self.y_min()) * (step / 100)
         self.__matrix[2][1] -= abs_step
@@ -66,8 +72,12 @@ class Window:
         self.__matrix[1][1] += step / 100
 
     def rotate(self, degrees):
+        first_translate = transformations.translate(-self.center().x(), -self.center().y())
         rotate = transformations.rotate(degrees)
-        self.__matrix = transformations.concat(self.__matrix, rotate)
+        last_translate = transformations.translate(self.center().x(), self.center().y())
+
+        # Concatena as três operações em uma só
+        self.__matrix = transformations.concat(transformations.concat(transformations.concat(self.__matrix, first_translate), rotate), last_translate)
 
     def transform(self, object):
         new_object = Wireframe()

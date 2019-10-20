@@ -150,13 +150,13 @@ class Handler:
     def on_window_rotate_right(self, component):
         degree_field = gtkBuilder.get_object('idWindowDegreeField')
         degrees = float(degree_field.get_text())
-        window.rotate(degrees)
+        window.rotate(-degrees)
         window_widget.queue_draw()
 
     def on_window_rotate_left(self, component):
         degree_field = gtkBuilder.get_object('idWindowDegreeField')
         degrees = float(degree_field.get_text())
-        window.rotate(-degrees)
+        window.rotate(degrees)
         window_widget.queue_draw()
 
     def on_insert_point(self, component):
