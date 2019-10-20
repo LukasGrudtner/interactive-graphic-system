@@ -37,6 +37,10 @@ class Wireframe:
         self.update_type()
         return self
 
+    def insert_point(self, point):
+        self.points.append(point)
+        self.update_type()
+
     def update_type(self):
         if self.n_points() == 1:
             self.type = "POINT"

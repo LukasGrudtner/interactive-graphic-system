@@ -6,16 +6,14 @@ import settings as default
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from world import World
 from point import Point
 from viewport import Viewport
 from window import Window
 
-world = World()
+window = Window(1000, 1000)
 
 surface = None
 viewport = Viewport()
-window = Window(100, 100)
 gtkBuilder = Gtk.Builder()
 gtkBuilder.add_from_file('window.glade')
 
@@ -31,19 +29,19 @@ window_widget.connect('destroy', Gtk.main_quit)
 
 
 class Handler:
-    def open_object_window_cb(self, window):
+    def open_object_window_cb(self, component):
         clear_point_combobox()
         clear_new_object_fields()
         new_object_window.show_all()
 
-    def open_edit_object_window_cb(self, window):
+    def open_edit_object_window_cb(self, component):
         if get_active_object() is not None:
             name_field = gtkBuilder.get_object('idEditObjectName')
             x_field = gtkBuilder.get_object('idEditObjectX')
             y_field = gtkBuilder.get_object('idEditObjectY')
             z_field = gtkBuilder.get_object('idEditObjectZ')
 
-            active_object = world.get_object(get_index_active_object())
+            active_object = viewport.get_object(get_index_active_object())
             active_point = get_edit_active_point()
 
             name_field.set_text(active_object.get_name())
@@ -55,10 +53,10 @@ class Handler:
 
             edit_object_window.show_all()
 
-    def close_object_window_cb(self, window):
-        window.hide()
+    def close_object_window_cb(self, component):
+        component.hide()
 
-    def insert_point_cb(self, window):
+    def insert_point_cb(self, component):
         name_field = gtkBuilder.get_object('idObjectName')
         x_field = gtkBuilder.get_object('idObjectX')
         y_field = gtkBuilder.get_object('idObjectY')
@@ -68,7 +66,7 @@ class Handler:
         y = float(y_field.get_text())
         z = float(z_field.get_text())
 
-        object = world.builder()
+        object = window.builder()
         object.set_name(name_field.get_text())
         object.add_point(x, y, z)
 
@@ -79,45 +77,37 @@ class Handler:
         point = Point(x, y, z)
         add_point_combobox(point)
 
-    def on_translate_right(self, btn):
+    def on_translate_right(self, component):
         active_object = get_active_object()
         active_object.translate(default.TRANSLATE_OFFSET, 0)
         window_widget.queue_draw()
 
-    def on_translate_left(self, btn):
+    def on_translate_left(self, component):
         active_object = get_active_object()
         active_object.translate(-default.TRANSLATE_OFFSET, 0)
         window_widget.queue_draw()
 
-    def on_translate_up(self, btn):
-        active_object = get_active_object()
-        active_object.translate(0, -default.TRANSLATE_OFFSET)
-        window_widget.queue_draw()
-
-    def on_translate_down(self, btn):
+    def on_translate_up(self, component):
         active_object = get_active_object()
         active_object.translate(0, default.TRANSLATE_OFFSET)
         window_widget.queue_draw()
 
-    def on_scale_in(self, btn):
+    def on_translate_down(self, component):
+        active_object = get_active_object()
+        active_object.translate(0, -default.TRANSLATE_OFFSET)
+        window_widget.queue_draw()
+
+    def on_scale_in(self, component):
         active_object = get_active_object()
         active_object.scale(default.SCALE_IN, default.SCALE_IN)
         window_widget.queue_draw()
 
-    def on_scale_out(self, btn):
+    def on_scale_out(self, component):
         active_object = get_active_object()
         active_object.scale(default.SCALE_OUT, default.SCALE_OUT)
         window_widget.queue_draw()
 
-    def on_rotate_right(self, btn):
-        degree_field = gtkBuilder.get_object('idDegreeField')
-        degrees = float(degree_field.get_text())
-
-        active_object = get_active_object()
-        active_object.rotate(-degrees, get_center_rotate())
-        window_widget.queue_draw()
-
-    def on_rotate_left(self, btn):
+    def on_rotate_right(self, component):
         degree_field = gtkBuilder.get_object('idDegreeField')
         degrees = float(degree_field.get_text())
 
@@ -125,7 +115,51 @@ class Handler:
         active_object.rotate(degrees, get_center_rotate())
         window_widget.queue_draw()
 
-    def on_insert_point(self, window):
+    def on_rotate_left(self, component):
+        degree_field = gtkBuilder.get_object('idDegreeField')
+        degrees = float(degree_field.get_text())
+
+        active_object = get_active_object()
+        active_object.rotate(-degrees, get_center_rotate())
+        window_widget.queue_draw()
+
+    def on_panning_up(self, component):
+        window.panning_up(get_step())
+        window_widget.queue_draw()
+
+    def on_panning_down(self, component):
+        window.panning_down(get_step())
+        window_widget.queue_draw()
+
+    def on_panning_right(self, component):
+        window.panning_right(get_step())
+        window_widget.queue_draw()
+
+    def on_panning_left(self, component):
+        window.panning_left(get_step())
+        window_widget.queue_draw()
+
+    def on_zoom_in(self, component):
+        window.zoom(get_step())
+        window_widget.queue_draw()
+
+    def on_zoom_out(self, component):
+        window.zoom(-get_step())
+        window_widget.queue_draw()
+
+    def on_window_rotate_right(self, component):
+        degree_field = gtkBuilder.get_object('idWindowDegreeField')
+        degrees = float(degree_field.get_text())
+        window.rotate(degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_left(self, component):
+        degree_field = gtkBuilder.get_object('idWindowDegreeField')
+        degrees = float(degree_field.get_text())
+        window.rotate(-degrees)
+        window_widget.queue_draw()
+
+    def on_insert_point(self, component):
         x_field = gtkBuilder.get_object('idEditObjectX')
         y_field = gtkBuilder.get_object('idEditObjectY')
         z_field = gtkBuilder.get_object('idEditObjectZ')
@@ -140,7 +174,7 @@ class Handler:
         clear_edit_object_fields()
         add_point_edit_combobox(active_object.last_point())
 
-    def on_edit_point(self, window):
+    def on_edit_point(self, component):
         x_field = gtkBuilder.get_object('idEditObjectX')
         y_field = gtkBuilder.get_object('idEditObjectY')
         z_field = gtkBuilder.get_object('idEditObjectZ')
@@ -154,24 +188,24 @@ class Handler:
         active_object.set_point(index_edited_point, x, y, z)
         update_edit_points_combobox(active_object)
 
-    def on_delete_point(self, window):
+    def on_delete_point(self, component):
         active_object = get_active_object()
         index_deleted_point = get_index_active_edit_point()
         active_object.remove_point(index_deleted_point)
         update_edit_points_combobox(active_object)
 
-    def create_object_cb(self, window):
-        window.hide()
+    def create_object_cb(self, component):
+        component.hide()
         if validate_creation_object():
-            object = world.create_object()
+            object = window.create_object()
+            viewport.add_object(object)
             add_object_combobox(object)
 
-    def on_points_combobox_change(self, window):
+    def on_points_combobox_change(self, component):
         active_object = get_active_object()
         if active_object is not None:
             active_point = get_active_point()
             if active_point is not None:
-                #     update_point_combobox(active_object)
                 x_field = gtkBuilder.get_object('idEditObjectX')
                 y_field = gtkBuilder.get_object('idEditObjectY')
                 z_field = gtkBuilder.get_object('idEditObjectZ')
@@ -179,7 +213,7 @@ class Handler:
                 y_field.set_text(str(active_point.y()))
                 z_field.set_text(str(active_point.z()))
 
-    def on_edit_points_combobox_change(self, window):
+    def on_edit_points_combobox_change(self, component):
         if get_active_object() is not None:
             if get_edit_active_point() is not None:
                 clear_edit_object_fields()
@@ -209,8 +243,8 @@ class Handler:
         clear_surface()
         cr.set_source_surface(surface, 0, 0)
 
-        for object in world.display_file:
-            draw(object)
+        for object in viewport.display_file():
+            draw(window.transform(object))
 
         cr.paint()
         return False
@@ -252,7 +286,7 @@ def set_edit_object_fields(object, point):
 
 def update_object_combobox():
     clear_object_combobox()
-    for object in world.display_file():
+    for object in viewport.display_file():
         object_combobox.append_text(object.get_name())
 
 
@@ -300,7 +334,7 @@ def add_point_edit_combobox(point):
 
 
 def get_active_object():
-    active_object = world.get_object(object_combobox.get_active())
+    active_object = viewport.get_object(object_combobox.get_active())
     return active_object
 
 
@@ -389,10 +423,13 @@ def rotation_center_point():
 
     return Point(x, y, z)
 
+def get_step():
+    step_field = gtkBuilder.get_object('idStepField')
+    return float(step_field.get_text())
 
 def draw(object):
     ctx = cairo.Context(surface)
-    ctx.set_line_width(2)
+    ctx.set_line_width(1)
 
     if object.object_type() == "POINT":
         point = object.first_point()
@@ -402,13 +439,10 @@ def draw(object):
     else:
         if object.object_type() == "WIREFRAME":
             for point in object.draw_points():
-                print(point.to_string())
                 transformed_point = viewport.transform(point.x(), point.y(), window)
-                print(transformed_point.to_string())
-                ctx.line_to(point.x(), point.y())
+                ctx.line_to(transformed_point.x(), transformed_point.y())
 
     ctx.stroke()
-
 
 def clear_surface():
     global surface
@@ -424,8 +458,10 @@ def run():
     Gtk.main()
 
 
-world.add_example(examples.square())
-world.add_example(examples.line())
+window.add_object(examples.square())
+window.add_object(examples.line())
+viewport.add_object(examples.square())
+viewport.add_object(examples.line())
 add_object_combobox(examples.square())
 add_object_combobox(examples.line())
 # Redraw the screen from the surface
