@@ -2,6 +2,7 @@ import numpy as np
 from wireframe import Wireframe
 import transformations
 from point import Point
+from curve import Curve, CurveBezier
 
 
 class Window:
@@ -12,7 +13,8 @@ class Window:
         self.__x_max = x_max
         self.__y_max = y_max
         self.__objects = []
-        self.__builder = Wireframe()
+        self.__wireframe_builder = Wireframe()
+        self.__curve_builder = Curve()
 
     def x_min(self):
         return self.__x_min
@@ -27,16 +29,25 @@ class Window:
         return self.__y_max
 
     def builder(self):
-        return self.__builder
+        return self.__wireframe_builder
+
+    def curve_builder(self):
+        return self.__curve_builder
 
     def get_object(self, index):
         if len(self.__objects) > index >= 0:
             return self.__objects[index]
 
     def create_object(self):
-        self.__objects.append(self.__builder)
-        del self.__builder
-        self.__builder = Wireframe()
+        self.__objects.append(self.__wireframe_builder)
+        del self.__wireframe_builder
+        self.__wireframe_builder = Wireframe()
+        return self._self.Gx().shape_objects[-1]
+
+    def create_curve(self):
+        self.__objects.append(self.__curve_builder)
+        del self.__curve_builder
+        self.__curve_builder = CurveBezier()
         return self.__objects[-1]
 
     def add_object(self, object):
@@ -53,23 +64,34 @@ class Window:
 
     def panning_up(self, step):
         abs_step = (self.y_max() - self.y_min()) * (step / 100)
-        self.__matrix[2][1] -= abs_step
+        panning_up = transformations.translate(0, -abs_step)
+        self.__matrix = transformations.concat(self.__matrix, panning_up)
 
     def panning_down(self, step):
         abs_step = (self.y_max() - self.y_min()) * (step / 100)
-        self.__matrix[2][1] += abs_step
+        panning_down = transformations.translate(0, abs_step)
+        self.__matrix = transformations.concat(self.__matrix, panning_down)
 
     def panning_right(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
-        self.__matrix[2][0] -= abs_step
+        panning_right = transformations.translate(-abs_step, 0)
+        self.__matrix = transformations.concat(self.__matrix, panning_right)
 
     def panning_left(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
-        self.__matrix[2][0] += abs_step
+        panning_left = transformations.translate(abs_step, 0)
+        self.__matrix = transformations.concat(self.__matrix, panning_left)
 
     def zoom(self, step):
-        self.__matrix[0][0] += step / 100
-        self.__matrix[1][1] += step / 100
+        scale = 1 + step/100
+        if scale == 0:
+            scale = 0.01
+
+        first_translate = transformations.translate(-self.center().x(), -self.center().y())
+        zoom = transformations.scale(scale, scale)
+        last_translate = transformations.translate(self.center().x(), self.center().y())
+
+        self.__matrix = transformations.concat(transformations.concat(transformations.concat(self.__matrix, first_translate), zoom), last_translate)
 
     def rotate(self, degrees):
         first_translate = transformations.translate(-self.center().x(), -self.center().y())

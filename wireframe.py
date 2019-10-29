@@ -1,6 +1,7 @@
 import transformations
 from point import Point
 
+
 class Wireframe:
     def __init__(self):
         self.points = []
@@ -63,7 +64,7 @@ class Wireframe:
         return None
 
     def draw_points(self):
-        return self.points + [self.points[0]]
+        return self.points
 
     def first_point(self):
         return self.points[0]
@@ -80,9 +81,9 @@ class Wireframe:
             cy += point.y()
             cz += point.z()
 
-        cx = cx/len(self.points)
-        cy = cy/len(self.points)
-        cz = cz/len(self.points)
+        cx = cx / len(self.points)
+        cy = cy / len(self.points)
+        cz = cz / len(self.points)
 
         return Point(cx, cy, cz)
 
