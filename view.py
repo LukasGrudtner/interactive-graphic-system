@@ -10,7 +10,7 @@ from point import Point
 from viewport import Viewport
 from window import Window
 
-window = Window(1000, 1000)
+window = Window(100, 100)
 
 surface = None
 viewport = Viewport()
@@ -26,6 +26,7 @@ object_combobox = gtkBuilder.get_object('idObjectCombobox')
 points_combobox = gtkBuilder.get_object('idPointsCombobox')
 edit_points_combobox = gtkBuilder.get_object('idEditPointsCombobox')
 curve_points_combobox = gtkBuilder.get_object('idCurvePointsCombobox')
+temporary_points = []
 
 window_widget.connect('destroy', Gtk.main_quit)
 
@@ -60,6 +61,7 @@ class Handler:
 
     def close_object_window_cb(self, component):
         component.hide()
+        temporary_points.clear()
 
     def insert_point_cb(self, component):
         name_field = gtkBuilder.get_object('idObjectName')
@@ -83,18 +85,15 @@ class Handler:
         add_point_combobox(point)
 
     def insert_curve_point_cb(self, component):
-        name_field = gtkBuilder.get_object('idCurveName')
-        x_field = gtkBuilder.get_object('idCurveControlX')
-        y_field = gtkBuilder.get_object('idCurveControlY')
-        z_field = gtkBuilder.get_object('idCurveControlZ')
+        x_field = gtkBuilder.get_object('idCurveX')
+        y_field = gtkBuilder.get_object('idCurveY')
+        z_field = gtkBuilder.get_object('idCurveZ')
 
         x = float(x_field.get_text())
         y = float(y_field.get_text())
         z = float(z_field.get_text())
 
-        object = window.curve_builder()
-        object.set_name(name_field.get_text())
-        object.add_control_point(x, y, z)
+        temporary_points.append(Point(x, y, z))
 
         x_field.set_text("")
         y_field.set_text("")
@@ -102,6 +101,9 @@ class Handler:
 
         point = Point(x, y, z)
         add_point_curve_combobox(point)
+
+        points_counter = gtkBuilder.get_object('idCounterPoints')
+        points_counter.set_text(str(len(temporary_points)) + " points")
 
     def on_translate_right(self, component):
         active_object = get_active_object()
@@ -230,7 +232,8 @@ class Handler:
     def create_curve_cb(self, component):
         component.hide()
         if validate_creation_curve():
-            curve = window.create_curve()
+            name = gtkBuilder.get_object('idCurveName').get_text()
+            curve = window.create_curve(name, temporary_points, get_curve_type())
             viewport.add_object(curve)
             add_object_combobox(curve)
 
@@ -429,31 +432,31 @@ def validate_creation_object():
 
 def validate_creation_curve():
     name_field = gtkBuilder.get_object('idCurveName')
-
-    x_field_initial = gtkBuilder.get_object('idCurveInitialX')
-    y_field_initial = gtkBuilder.get_object('idCurveInitialY')
-    z_field_initial = gtkBuilder.get_object('idCurveInitialZ')
-
-    x_field_final = gtkBuilder.get_object('idCurveFinalX')
-    y_field_final = gtkBuilder.get_object('idCurveFinalY')
-    z_field_final = gtkBuilder.get_object('idCurveFinalZ')
+    x_field = gtkBuilder.get_object('idCurveX')
+    y_field = gtkBuilder.get_object('idCurveY')
+    z_field = gtkBuilder.get_object('idCurveZ')
 
     if name_field.get_text() == "":
         return False
-    if x_field_initial == "":
+    elif x_field == "":
         return False
-    if y_field_initial == "":
+    elif y_field == "":
         return False
-    if z_field_initial == "":
-        return False
-    if x_field_final == "":
-        return False
-    if y_field_final == "":
-        return False
-    if z_field_final == "":
+    elif z_field == "":
         return False
     return True
 
+def get_curve_type():
+    radioButtonHermite = gtkBuilder.get_object('idRadioHermite')
+    radioButtonBezier = gtkBuilder.get_object('idRadioBezier')
+    radioButtonBSpline = gtkBuilder.get_object('idRadioBSpline')
+
+    if radioButtonHermite.get_active():
+        return "HERMITE"
+    elif radioButtonBezier.get_active():
+        return "BEZIER"
+    else:
+        return "BSPLINE"
 
 def get_center_rotate():
     radioButtonRotationWorld = gtkBuilder.get_object('idRotationWorld')
@@ -516,9 +519,10 @@ def draw(object):
 def clear_surface():
     global surface
     cr = cairo.Context(surface)
-    cr.set_source_rgb(1, 1, 1)
+    cr.set_source_rgb(255, 255, 255)
     cr.paint()
     del cr
+
 
 def run():
     gtkBuilder.connect_signals(Handler())
@@ -530,14 +534,18 @@ window.add_object(examples.square())
 window.add_object(examples.line())
 window.add_object(examples.curve_bezier())
 window.add_object(examples.curve_hermite())
+window.add_object(examples.curve_bspline_fwd_diff())
 viewport.add_object(examples.square())
 viewport.add_object(examples.line())
 viewport.add_object(examples.curve_bezier())
 viewport.add_object(examples.curve_hermite())
+viewport.add_object(examples.curve_bspline_fwd_diff())
 add_object_combobox(examples.square())
 add_object_combobox(examples.line())
 add_object_combobox(examples.curve_bezier())
 add_object_combobox(examples.curve_hermite())
+add_object_combobox(examples.curve_bspline_fwd_diff())
+
 # Redraw the screen from the surface
 # def draw_cb(wid, cr):
 #     global surface

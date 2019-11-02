@@ -1,7 +1,9 @@
 from point import Point
 from bezier import Bezier
 from hermite import Hermite
+from bspline import BSpline
 from wireframe import Wireframe
+import settings
 
 
 class Curve(Wireframe):
@@ -20,6 +22,9 @@ class Curve(Wireframe):
 
     def points(self):
         return self.points
+
+    def n_points(self):
+        return len(self.points)
 
 
 class CurveBezier(Curve):
@@ -56,7 +61,26 @@ class CurveHermite(Curve):
 
         while counter < len(self.points):
             hermite = Hermite(
-                [self.points[counter - 1], self.points[counter], self.points[counter - 2], self.points[counter+1]])
+                [self.points[counter - 1], self.points[counter], self.points[counter - 2], self.points[counter + 1]])
             curve_points += hermite.generate_points()
             counter += 2
+        return curve_points
+
+
+class CurveBSpline(Curve):
+    def __init__(self):
+        super(CurveBSpline, self).__init__()
+
+    def get_points(self):
+        return self.draw_points()
+
+    def draw_points(self):
+        counter = 0
+        curve_points = []
+
+        while counter+4 <= len(self.points):
+            bspline = BSpline(self.points[counter:counter+4])
+            curve_points += bspline.generate_points(settings.FWD_DIFF_STEPS)
+            counter += 1
+
         return curve_points

@@ -2,7 +2,7 @@ import numpy as np
 from wireframe import Wireframe
 import transformations
 from point import Point
-from curve import Curve, CurveBezier
+from curve import Curve, CurveBezier, CurveHermite, CurveBSpline
 
 
 class Window:
@@ -44,10 +44,19 @@ class Window:
         self.__wireframe_builder = Wireframe()
         return self._self.Gx().shape_objects[-1]
 
-    def create_curve(self):
-        self.__objects.append(self.__curve_builder)
-        del self.__curve_builder
-        self.__curve_builder = CurveBezier()
+    def create_curve(self, name, points, type):
+        curve = None
+        if type == "BEZIER":
+            curve = CurveBezier()
+        elif type == "HERMITE":
+            curve = CurveHermite()
+        else:
+            curve = CurveBSpline()
+
+        curve.set_name(name)
+        curve.set_points(points)
+
+        self.__objects.append(curve)
         return self.__objects[-1]
 
     def add_object(self, object):

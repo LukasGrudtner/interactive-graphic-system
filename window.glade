@@ -434,7 +434,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="idObjectName1">
+                  <object class="GtkEntry" id="idCurveName">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="margin_left">5</property>
@@ -475,11 +475,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="idObjectX1">
+                  <object class="GtkEntry" id="idCurveX">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="margin_left">5</property>
                     <property name="margin_right">10</property>
+                    <property name="input_purpose">number</property>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -518,9 +519,10 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="idObjectY1">
+                  <object class="GtkEntry" id="idCurveY">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="input_purpose">number</property>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -557,11 +559,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="idObjectZ1">
+                  <object class="GtkEntry" id="idCurveZ">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="margin_left">5</property>
                     <property name="margin_right">10</property>
+                    <property name="input_purpose">number</property>
+                    <signal name="activate" handler="insert_curve_point_cb" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -604,7 +608,16 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkLabel" id="idCounterPoints">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">0 points</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -614,7 +627,78 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText" id="idPointsCombobox1">
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkRadioButton" id="idRadioBezier">
+                <property name="label" translatable="yes">Bezier</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkRadioButton" id="idRadioHermite">
+                <property name="label" translatable="yes">Hermite</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+                <property name="group">idRadioBezier</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkRadioButton" id="idRadioBSpline">
+                <property name="label" translatable="yes">B-Spline</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">5</property>
+                <property name="margin_bottom">5</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+                <property name="group">idRadioBezier</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="idCurvePointsCombobox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_left">10</property>
@@ -624,7 +708,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
         <child>
@@ -671,7 +755,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </object>
@@ -712,7 +796,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="idCurveName">
+              <object class="GtkEntry" id="idCurveName1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="margin_left">5</property>
@@ -1175,7 +1259,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText" id="idCurvePointsCombobox">
+          <object class="GtkComboBoxText" id="idCurvePointsCombobox2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_left">10</property>
