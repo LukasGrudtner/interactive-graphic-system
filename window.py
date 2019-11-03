@@ -6,12 +6,14 @@ from curve import Curve, CurveBezier, CurveHermite, CurveBSpline
 
 
 class Window:
-    def __init__(self, x_max, y_max):
-        self.__matrix = np.eye(3, 3)
+    def __init__(self, x_max, y_max, z_max):
+        self.__matrix = np.eye(4, 4)
         self.__x_min = 0
         self.__y_min = 0
+        self.__z_min = 0
         self.__x_max = x_max
         self.__y_max = y_max
+        self.__z_max = z_max
         self.__objects = []
         self.__wireframe_builder = Wireframe()
         self.__curve_builder = Curve()
@@ -27,6 +29,12 @@ class Window:
 
     def y_max(self):
         return self.__y_max
+
+    def z_min(self):
+        return self.__z_min
+
+    def z_max(self):
+        return self.__z_max
 
     def builder(self):
         return self.__wireframe_builder
@@ -66,49 +74,72 @@ class Window:
         return self.__objects
 
     def center(self):
-        cx = (self.__x_max - self.__x_min)/2
-        cy = (self.__y_max - self.__y_min)/2
+        cx = (self.__x_max - self.__x_min) / 2
+        cy = (self.__y_max - self.__y_min) / 2
+        cz = (self.__z_max - self.__z_min) / 2
 
         return Point(cx, cy, 1)
 
     def panning_up(self, step):
         abs_step = (self.y_max() - self.y_min()) * (step / 100)
-        panning_up = transformations.translate(0, -abs_step)
+        panning_up = transformations.translate(0, -abs_step, 0)
         self.__matrix = transformations.concat(self.__matrix, panning_up)
 
     def panning_down(self, step):
         abs_step = (self.y_max() - self.y_min()) * (step / 100)
-        panning_down = transformations.translate(0, abs_step)
+        panning_down = transformations.translate(0, abs_step, 0)
         self.__matrix = transformations.concat(self.__matrix, panning_down)
 
     def panning_right(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
-        panning_right = transformations.translate(-abs_step, 0)
+        panning_right = transformations.translate(-abs_step, 0, 0)
         self.__matrix = transformations.concat(self.__matrix, panning_right)
 
     def panning_left(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
-        panning_left = transformations.translate(abs_step, 0)
+        panning_left = transformations.translate(abs_step, 0, 0)
         self.__matrix = transformations.concat(self.__matrix, panning_left)
 
+    def panning_forward(self, step):
+        abs_step = (self.x_max() - self.x_min()) * (step / 100)
+        panning_forward = transformations.translate(0, 0, abs_step)
+        self.__matrix = transformations.concat(self.__matrix, panning_forward)
+
+    def panning_back(self, step):
+        abs_step = (self.x_max() - self.x_min()) * (step / 100)
+        panning_back = transformations.translate(0, 0, -abs_step)
+        self.__matrix = transformations.concat(self.__matrix, panning_back)
+
     def zoom(self, step):
-        scale = 1 + step/100
+        scale = 1 + step / 100
         if scale == 0:
             scale = 0.01
 
-        first_translate = transformations.translate(-self.center().x(), -self.center().y())
-        zoom = transformations.scale(scale, scale)
-        last_translate = transformations.translate(self.center().x(), self.center().y())
+        center = self.center()
 
-        self.__matrix = transformations.concat(transformations.concat(transformations.concat(self.__matrix, first_translate), zoom), last_translate)
+        first_translate = transformations.translate(-center.x(), -center.y(), -center.z())
+        zoom = transformations.scale(scale, scale, scale)
+        last_translate = transformations.translate(center.x(), center.y(), center.z())
 
-    def rotate(self, degrees):
-        first_translate = transformations.translate(-self.center().x(), -self.center().y())
-        rotate = transformations.rotate(degrees)
-        last_translate = transformations.translate(self.center().x(), self.center().y())
+        self.__matrix = transformations.concat(
+            transformations.concat(transformations.concat(self.__matrix, first_translate), zoom), last_translate)
 
-        # Concatena as três operações em uma só
-        self.__matrix = transformations.concat(transformations.concat(transformations.concat(self.__matrix, first_translate), rotate), last_translate)
+    def rotate_z(self, degrees):
+        self.__rotate__(transformations.rotate_z(degrees))
+
+    def rotate_y(self, degrees):
+        self.__rotate__(transformations.rotate_y(degrees))
+
+    def rotate_x(self, degrees):
+        self.__rotate__(transformations.rotate_x(degrees))
+
+    def __rotate__(self, rotate):
+        center = self.center()
+        first_translate = transformations.translate(-center.x(), -center.y(), -center.z())
+        last_translate = transformations.translate(center.x(), center.y(), center.z())
+
+        self.__matrix = transformations.concat(
+            transformations.concat(transformations.concat(self.__matrix, first_translate), rotate), last_translate)
 
     def transform(self, object):
         new_object = Wireframe()

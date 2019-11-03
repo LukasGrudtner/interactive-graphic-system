@@ -11,7 +11,7 @@ from point import Point
 from viewport import Viewport
 from window import Window
 
-window = Window(100, 100)
+window = Window(100, 100, 100)
 
 surface = None
 viewport = Viewport()
@@ -107,49 +107,65 @@ class Handler:
         points_counter.set_text(str(len(temporary_points)) + " points")
 
     def on_translate_right(self, component):
-        active_object = get_active_object()
-        active_object.translate(default.TRANSLATE_OFFSET, 0)
+        get_active_object().translate(default.TRANSLATE_OFFSET, 0, 0)
         window_widget.queue_draw()
 
     def on_translate_left(self, component):
-        active_object = get_active_object()
-        active_object.translate(-default.TRANSLATE_OFFSET, 0)
+        get_active_object().translate(-default.TRANSLATE_OFFSET, 0, 0)
         window_widget.queue_draw()
 
     def on_translate_up(self, component):
-        active_object = get_active_object()
-        active_object.translate(0, default.TRANSLATE_OFFSET)
+        get_active_object().translate(0, default.TRANSLATE_OFFSET, 0)
         window_widget.queue_draw()
 
     def on_translate_down(self, component):
-        active_object = get_active_object()
-        active_object.translate(0, -default.TRANSLATE_OFFSET)
+        get_active_object().translate(0, -default.TRANSLATE_OFFSET, 0)
+        window_widget.queue_draw()
+
+    def on_translate_forward(self, component):
+        get_active_object().translate(0, 0, default.TRANSLATE_OFFSET)
+        window_widget.queue_draw()
+
+    def on_translate_back(self, component):
+        get_active_object().translate(0, 0, -default.TRANSLATE_OFFSET)
         window_widget.queue_draw()
 
     def on_scale_in(self, component):
-        active_object = get_active_object()
-        active_object.scale(default.SCALE_IN, default.SCALE_IN)
+        get_active_object().scale(default.SCALE_IN, default.SCALE_IN, default.SCALE_IN)
         window_widget.queue_draw()
 
     def on_scale_out(self, component):
-        active_object = get_active_object()
-        active_object.scale(default.SCALE_OUT, default.SCALE_OUT)
+        get_active_object().scale(default.SCALE_OUT, default.SCALE_OUT, default.SCALE_OUT)
         window_widget.queue_draw()
 
-    def on_rotate_right(self, component):
-        degree_field = gtkBuilder.get_object('idDegreeField')
+    def on_rotate_z_right(self, degree_field):
         degrees = float(degree_field.get_text())
-
-        active_object = get_active_object()
-        active_object.rotate(degrees, get_center_rotate())
+        get_active_object().rotate_z(-degrees, get_center_rotate())
         window_widget.queue_draw()
 
-    def on_rotate_left(self, component):
-        degree_field = gtkBuilder.get_object('idDegreeField')
+    def on_rotate_z_left(self, degree_field):
         degrees = float(degree_field.get_text())
+        get_active_object().rotate_z(degrees, get_center_rotate())
+        window_widget.queue_draw()
 
-        active_object = get_active_object()
-        active_object.rotate(-degrees, get_center_rotate())
+    def on_rotate_y_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        get_active_object().rotate_y(-degrees, get_center_rotate())
+        window_widget.queue_draw()
+
+    def on_rotate_y_left(self, degree_field):
+        degrees = float(degree_field.get_text())
+        get_active_object().rotate_y(degrees, get_center_rotate())
+        window_widget.queue_draw()
+
+    def on_rotate_x_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        get_active_object().rotate_x(-degrees, get_center_rotate())
+        window_widget.queue_draw()
+
+    def on_rotate_x_left(self, degree_field):
+        degrees = float(degree_field.get_text())
+        get_active_object().rotate_x(degrees, get_center_rotate())
         window_widget.queue_draw()
 
     def on_panning_up(self, component):
@@ -168,6 +184,14 @@ class Handler:
         window.panning_left(get_step())
         window_widget.queue_draw()
 
+    def on_panning_forward(self, component):
+        window.panning_forward(get_step())
+        window_widget.queue_draw()
+
+    def on_panning_back(self, component):
+        window.panning_back(get_step())
+        window_widget.queue_draw()
+
     def on_zoom_in(self, component):
         window.zoom(get_step())
         window_widget.queue_draw()
@@ -176,16 +200,34 @@ class Handler:
         window.zoom(-get_step())
         window_widget.queue_draw()
 
-    def on_window_rotate_right(self, component):
-        degree_field = gtkBuilder.get_object('idWindowDegreeField')
+    def on_window_rotate_z_right(self, degree_field):
         degrees = float(degree_field.get_text())
-        window.rotate(-degrees)
+        window.rotate_z(-degrees)
         window_widget.queue_draw()
 
-    def on_window_rotate_left(self, component):
-        degree_field = gtkBuilder.get_object('idWindowDegreeField')
+    def on_window_rotate_z_left(self, degree_field):
         degrees = float(degree_field.get_text())
-        window.rotate(degrees)
+        window.rotate_z(degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_y_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        window.rotate_y(-degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_y_left(self, degree_field):
+        degrees = float(degree_field.get_text())
+        window.rotate_y(degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_x_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        window.rotate_x(-degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_x_left(self, degree_field):
+        degrees = float(degree_field.get_text())
+        window.rotate_x(degrees)
         window_widget.queue_draw()
 
     def on_insert_point(self, component):

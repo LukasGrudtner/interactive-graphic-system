@@ -4,10 +4,7 @@ import numpy as np
 class Point:
     def __init__(self, x, y, z):
         self.__teste123 = x
-        self.coordinate = np.array([x, y, 1])
-
-    def _teste(self):
-        return self.__teste123
+        self.coordinate = np.array([x, y, z, 1])
 
     def x(self):
         return self.coordinate[0]

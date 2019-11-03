@@ -90,20 +90,32 @@ class Wireframe:
 
         return Point(cx, cy, cz)
 
-    def translate(self, dx, dy):
-        self.__transform__(transformations.translate(dx, dy))
+    def translate(self, dx, dy, dz):
+        self.__transform__(transformations.translate(dx, dy, dz))
 
-    def scale(self, sx, sy):
-        self.__transform__(transformations.scale(sx, sy))
+    def scale(self, sx, sy, sz):
+        center = self.center()
+        first_translate = transformations.translate(-center.x(), -center.y(), -center.z())
+        scale = transformations.scale(sx, sy, sz)
+        last_translate = transformations.translate(center.x(), center.y(), center.z())
 
-    def rotate(self, degrees, center):
-        first_translate = transformations.translate(-center.x(), -center.y())
-        rotate = transformations.rotate(degrees)
-        last_translate = transformations.translate(center.x(), center.y())
+        transformation = transformations.concat(transformations.concat(first_translate, scale), last_translate)
+        self.__transform__(transformation)
 
-        # Concatena as três operações em uma só
+    def rotate_z(self, degrees, center):
+        self.__rotate__(center, transformations.rotate_z(degrees))
+
+    def rotate_y(self, degrees, center):
+        self.__rotate__(center, transformations.rotate_y(degrees))
+
+    def rotate_x(self, degrees, center):
+        self.__rotate__(center, transformations.rotate_x(degrees))
+
+    def __rotate__(self, center, rotate):
+        first_translate = transformations.translate(-center.x(), -center.y(), -center.z())
+        last_translate = transformations.translate(center.x(), center.y(), center.z())
+
         transformation = transformations.concat(transformations.concat(first_translate, rotate), last_translate)
-
         self.__transform__(transformation)
 
     def __transform__(self, transformation):
