@@ -30,7 +30,7 @@ def curve_bezier():
     gen_curve.add_point(70, 50, 1)
     gen_curve.add_point(60, 0, 1)
     gen_curve.add_point(100, 0, 1)
-    return gen_curve
+    return gen_curve.to_wireframe()
 
 
 def curve_hermite():
@@ -45,7 +45,7 @@ def curve_hermite():
     # gen_curve.add_point(400, 400, 1)
     # gen_curve.add_point(800, 0, 1)
     # gen_curve.add_point(1000, 0, 1)
-    return gen_curve
+    return gen_curve.to_wireframe()
 
 
 def curve_bspline_fwd_diff():
@@ -60,4 +60,4 @@ def curve_bspline_fwd_diff():
     gen_curve.add_point(40, 0, 1)
     gen_curve.add_point(0, 20, 1)
     gen_curve.add_point(0, 60, 1)
-    return gen_curve
+    return gen_curve.to_wireframe()

@@ -3,6 +3,7 @@ import gi
 import math
 import examples
 import settings as default
+import obj_module
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -233,9 +234,9 @@ class Handler:
         component.hide()
         if validate_creation_curve():
             name = gtkBuilder.get_object('idCurveName').get_text()
-            curve = window.create_curve(name, temporary_points, get_curve_type())
-            viewport.add_object(curve)
-            add_object_combobox(curve)
+            object = window.create_curve(name, temporary_points, get_curve_type())
+            viewport.add_object(object)
+            add_object_combobox(object)
 
     def on_points_combobox_change(self, component):
         active_object = get_active_object()
@@ -248,6 +249,24 @@ class Handler:
                 x_field.set_text(str(active_point.x()))
                 y_field.set_text(str(active_point.y()))
                 z_field.set_text(str(active_point.z()))
+
+    def on_open_file(self, component):
+        file_chooser = gtkBuilder.get_object('idFileChooser')
+        file_chooser.show()
+
+    def on_choosen_file(self, chooser):
+        chooser.hide()
+        object = obj_module.read_obj(chooser.get_filename())
+        window.add_object(object)
+        viewport.add_object(object)
+        add_object_combobox(object)
+
+    def on_open_save_chooser(self, chooser):
+        chooser.show()
+
+    def on_save_file(self, chooser):
+        obj_module.write_obj(chooser.get_filename(), get_active_object())
+        chooser.hide()
 
     def on_edit_points_combobox_change(self, component):
         if get_active_object() is not None:

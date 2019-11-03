@@ -56,7 +56,7 @@ class Window:
         curve.set_name(name)
         curve.set_points(points)
 
-        self.__objects.append(curve)
+        self.__objects.append(curve.to_wireframe())
         return self.__objects[-1]
 
     def add_object(self, object):
@@ -112,7 +112,7 @@ class Window:
 
     def transform(self, object):
         new_object = Wireframe()
-        for point in object.get_points():
+        for point in object.points():
             result = point.to_array().dot(self.__matrix)
             new_object.insert_point(Point(result[0], result[1], result[2]))
         return new_object
