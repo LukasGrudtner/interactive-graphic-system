@@ -1,84 +1,55 @@
 import transformations
 from point import Point
+from line import Line
+import _thread
 
 
 class Wireframe:
     def __init__(self):
         self._points = []
-        self._name = ""
-        self._current_point_index = 0
-        self._type = ""
+        self._lines = []
+        self._transformation = None
 
-    def set_name(self, _name):
-        self._name = _name
+    def add_point(self, x, y, z):
+        self._points.append(Point(x, y, z, self.size()))
+        return self._points[-1]
 
-    def get_point(self, index):
-        if len(self._points) > index >= 0:
-            return self._points[index]
+    def get_point(self, p):
+        for point in self._points:
+            if point == p:
+                return point
+
+    def get_point_by_id(self, id):
+        for point in self._points:
+            if point.id() == id:
+                return point
 
     def points(self):
         return self._points
 
-    def get_points(self):
-        return self._points
+    def line(self, p1, p2):
+        point1 = self.get_point(p1)
+        point2 = self.get_point(p2)
 
-    def set_points(self, _points):
-        self._points = _points
+        if point1 and point2:
+            self._lines.append(Line(point1, point2))
 
-    def get_name(self):
-        return self._name
+    def pop(self, i):
+        if i < self.size():
+            self._lines.pop(i)
 
-    def set_point(self, index, x, y, z):
-        if 0 <= index < len(self._points):
-            self._points[index] = Point(x, y, z)
+    def get(self, i):
+        if i < self.size():
+            return self._lines[i]
 
-    def remove_point(self, index):
-        if 0 <= index < len(self._points):
-            self._points.pop(index)
+    def lines(self):
+        return self._lines
 
-    def add_point(self, x, y, z):
-        self._points.append(Point(x, y, z))
-        self.update_type()
-        return self
-
-    def insert_point(self, point):
-        self._points.append(point)
-        self.update_type()
-
-    def update_type(self):
-        if self.n_points() == 1:
-            self._type = "POINT"
-
-        if self.n_points() > 1:
-            self._type = "WIREFRAME"
-
-    def object_type(self):
-        return self._type
-
-    def n_points(self):
+    def size(self):
         return len(self._points)
 
-    def next_point(self):
-        if self._current_point_index < len(self._points):
-            current_point = self._points[self._current_point_index]
-            self._current_point_index += 1
-            return current_point
-
-        return None
-
-    def draw_points(self):
-        return self._points
-
-    def first_point(self):
-        return self._points[0]
-
-    def last_point(self):
-        return self._points[-1]
-
     def center(self):
-        cx = 0
-        cy = 0
-        cz = 0
+        cx, cy, cz = 0, 0, 0
         for point in self._points:
             cx += point.x()
             cy += point.y()
@@ -91,7 +62,7 @@ class Wireframe:
         return Point(cx, cy, cz)
 
     def translate(self, dx, dy, dz):
-        self.__transform__(transformations.translate(dx, dy, dz))
+        self.transform(transformations.translate(dx, dy, dz))
 
     def scale(self, sx, sy, sz):
         center = self.center()
@@ -100,27 +71,41 @@ class Wireframe:
         last_translate = transformations.translate(center.x(), center.y(), center.z())
 
         transformation = transformations.concat(transformations.concat(first_translate, scale), last_translate)
-        self.__transform__(transformation)
+        self.transform(transformation)
 
     def rotate_z(self, degrees, center):
-        self.__rotate__(center, transformations.rotate_z(degrees))
+        self._rotate(center, transformations.rotate_z(degrees))
 
     def rotate_y(self, degrees, center):
-        self.__rotate__(center, transformations.rotate_y(degrees))
+        self._rotate(center, transformations.rotate_y(degrees))
 
     def rotate_x(self, degrees, center):
-        self.__rotate__(center, transformations.rotate_x(degrees))
+        self._rotate(center, transformations.rotate_x(degrees))
 
-    def __rotate__(self, center, rotate):
+    def _rotate(self, center, rotate):
         first_translate = transformations.translate(-center.x(), -center.y(), -center.z())
         last_translate = transformations.translate(center.x(), center.y(), center.z())
-
         transformation = transformations.concat(transformations.concat(first_translate, rotate), last_translate)
-        self.__transform__(transformation)
+        self.transform(transformation)
 
-    def __transform__(self, transformation):
-        new_points = []
+    def transform(self, transformation):
+        return self.serial_transformation(transformation)
+
+    def serial_transformation(self, transformation):
         for point in self._points:
-            result = transformations.concat(point.to_array(), transformation)
-            new_points.append(Point(result[0], result[1], result[2]))
-        self.set_points(new_points)
+            point.transform(transformation)
+        return self
+
+    def concurrent_transformation(self, trasformation):
+        for point in self._points:
+            _thread.start_new_thread(self._transform, (point, trasformation,))
+
+    def _transform(self, point, transformation):
+        point.transform(transformation)
+
+    def str(self):
+        str = ""
+        for point in self._points:
+            str += point.str()
+            str += "\n"
+        return str

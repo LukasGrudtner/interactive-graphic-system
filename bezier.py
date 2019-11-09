@@ -5,13 +5,13 @@ from point import Point
 
 class Bezier:
     def __init__(self, points):
-        self.__t = symbols('t')
-        self.__T = self.T()
-        self.__M = self.M()
-        self.__points = points
+        self._t = symbols('t')
+        self._T = self.T()
+        self._M = self.M()
+        self._points = points
 
     def T(self):
-        return Matrix([self.__t ** 3, self.__t ** 2, self.__t, 1]).transpose()
+        return Matrix([self._t ** 3, self._t ** 2, self._t, 1]).transpose()
 
     def M(self):
         return Matrix([[-1, 3, -3, 1],
@@ -22,7 +22,7 @@ class Bezier:
     def Gx(self):
         col = []
         i = 0
-        for point in self.__points:
+        for point in self._points:
             col.append(point.x())
             i += 1
         return Matrix([col]).transpose()
@@ -30,7 +30,7 @@ class Bezier:
     def Gy(self):
         col = []
         i = 0
-        for point in self.__points:
+        for point in self._points:
             col.append(point.y())
             i += 1
         return Matrix([col]).transpose()
@@ -38,7 +38,7 @@ class Bezier:
     def Gz(self):
         col = []
         i = 0
-        for point in self.__points:
+        for point in self._points:
             col.append(point.z())
             i += 1
         return Matrix([col]).transpose()
@@ -55,7 +55,7 @@ class Bezier:
         fz = self.T() * self.M() * self.Gz()
         return fz[0]
 
-    def generate_points(self):
+    def build(self):
         fx = self.fx()
         fy = self.fy()
         fz = self.fz()
@@ -64,9 +64,9 @@ class Bezier:
 
         points = []
         for ti in ts:
-            x = fx.subs(self.__t, ti)
-            y = fy.subs(self.__t, ti)
-            z = fz.subs(self.__t, ti)
+            x = fx.subs(self._t, ti)
+            y = fy.subs(self._t, ti)
+            z = fz.subs(self._t, ti)
             points.append(Point(x, y, z))
 
         return points

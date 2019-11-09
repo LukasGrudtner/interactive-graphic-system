@@ -4,6 +4,7 @@ import math
 import examples
 import settings as default
 import obj_module
+import multiprocessing as mp
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -11,7 +12,7 @@ from point import Point
 from viewport import Viewport
 from window import Window
 
-window = Window(100, 100, 100)
+window = Window(default.WINDOW_WIDTH, default.WINDOW_HEIGHT)
 
 surface = None
 viewport = Viewport()
@@ -21,6 +22,7 @@ gtkBuilder.add_from_file('window.glade')
 window_widget = gtkBuilder.get_object('main_window')
 new_object_window = gtkBuilder.get_object('new_object_window')
 edit_object_window = gtkBuilder.get_object('edit_object_window')
+bezier_bicubic_surface_window = gtkBuilder.get_object('idBezierBicubicSurface')
 new_curve_window = gtkBuilder.get_object('new_curve_window')
 new_point_window = gtkBuilder.get_object('new_point_window')
 object_combobox = gtkBuilder.get_object('idObjectCombobox')
@@ -59,6 +61,9 @@ class Handler:
 
     def open_curve_window_cb(self, component):
         new_curve_window.show_all()
+
+    def on_open_window(self, window):
+        window.show_all()
 
     def close_object_window_cb(self, component):
         component.hide()
@@ -106,6 +111,23 @@ class Handler:
         points_counter = gtkBuilder.get_object('idCounterPoints')
         points_counter.set_text(str(len(temporary_points)) + " points")
 
+    def on_create_bezier_bicubic_surface(self, window):
+        window.hide()
+        self.create_bezier_bicubic_surface()
+
+    def create_bezier_bicubic_surface(self):
+        name = gtkBuilder.get_object('idBezierBicubicSurfaceName').get_text()
+        points = []
+        for i in range(16):
+            cellX = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'X')
+            cellY = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'Y')
+            cellZ = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'Z')
+            points.append(Point(float(cellX.get_text()), float(cellY.get_text()), float(cellZ.get_text())))
+
+        object = window.create_bezier_bicubic_surface(name, points)
+        viewport.add_object(object)
+        add_object_combobox(object)
+
     def on_translate_right(self, component):
         get_active_object().translate(default.TRANSLATE_OFFSET, 0, 0)
         window_widget.queue_draw()
@@ -138,24 +160,9 @@ class Handler:
         get_active_object().scale(default.SCALE_OUT, default.SCALE_OUT, default.SCALE_OUT)
         window_widget.queue_draw()
 
-    def on_rotate_z_right(self, degree_field):
+    def on_rotate_x_left(self, degree_field):
         degrees = float(degree_field.get_text())
-        get_active_object().rotate_z(-degrees, get_center_rotate())
-        window_widget.queue_draw()
-
-    def on_rotate_z_left(self, degree_field):
-        degrees = float(degree_field.get_text())
-        get_active_object().rotate_z(degrees, get_center_rotate())
-        window_widget.queue_draw()
-
-    def on_rotate_y_right(self, degree_field):
-        degrees = float(degree_field.get_text())
-        get_active_object().rotate_y(-degrees, get_center_rotate())
-        window_widget.queue_draw()
-
-    def on_rotate_y_left(self, degree_field):
-        degrees = float(degree_field.get_text())
-        get_active_object().rotate_y(degrees, get_center_rotate())
+        get_active_object().rotate_x(degrees, get_center_rotate())
         window_widget.queue_draw()
 
     def on_rotate_x_right(self, degree_field):
@@ -163,9 +170,24 @@ class Handler:
         get_active_object().rotate_x(-degrees, get_center_rotate())
         window_widget.queue_draw()
 
-    def on_rotate_x_left(self, degree_field):
+    def on_rotate_y_left(self, degree_field):
         degrees = float(degree_field.get_text())
-        get_active_object().rotate_x(degrees, get_center_rotate())
+        get_active_object().rotate_y(degrees, get_center_rotate())
+        window_widget.queue_draw()
+
+    def on_rotate_y_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        get_active_object().rotate_y(-degrees, get_center_rotate())
+        window_widget.queue_draw()
+
+    def on_rotate_z_left(self, degree_field):
+        degrees = float(degree_field.get_text())
+        get_active_object().rotate_z(degrees, get_center_rotate())
+        window_widget.queue_draw()
+
+    def on_rotate_z_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        get_active_object().rotate_z(-degrees, get_center_rotate())
         window_widget.queue_draw()
 
     def on_panning_up(self, component):
@@ -200,24 +222,9 @@ class Handler:
         window.zoom(-get_step())
         window_widget.queue_draw()
 
-    def on_window_rotate_z_right(self, degree_field):
+    def on_window_rotate_x_left(self, degree_field):
         degrees = float(degree_field.get_text())
-        window.rotate_z(-degrees)
-        window_widget.queue_draw()
-
-    def on_window_rotate_z_left(self, degree_field):
-        degrees = float(degree_field.get_text())
-        window.rotate_z(degrees)
-        window_widget.queue_draw()
-
-    def on_window_rotate_y_right(self, degree_field):
-        degrees = float(degree_field.get_text())
-        window.rotate_y(-degrees)
-        window_widget.queue_draw()
-
-    def on_window_rotate_y_left(self, degree_field):
-        degrees = float(degree_field.get_text())
-        window.rotate_y(degrees)
+        window.rotate_x(degrees)
         window_widget.queue_draw()
 
     def on_window_rotate_x_right(self, degree_field):
@@ -225,9 +232,24 @@ class Handler:
         window.rotate_x(-degrees)
         window_widget.queue_draw()
 
-    def on_window_rotate_x_left(self, degree_field):
+    def on_window_rotate_y_left(self, degree_field):
         degrees = float(degree_field.get_text())
-        window.rotate_x(degrees)
+        window.rotate_y(degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_y_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        window.rotate_y(-degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_z_left(self, degree_field):
+        degrees = float(degree_field.get_text())
+        window.rotate_z(degrees)
+        window_widget.queue_draw()
+
+    def on_window_rotate_z_right(self, degree_field):
+        degrees = float(degree_field.get_text())
+        window.rotate_z(-degrees)
         window_widget.queue_draw()
 
     def on_insert_point(self, component):
@@ -298,7 +320,7 @@ class Handler:
 
     def on_choosen_file(self, chooser):
         chooser.hide()
-        object = obj_module.read_obj(chooser.get_filename())
+        object = obj_module.read(chooser.get_filename())
         window.add_object(object)
         viewport.add_object(object)
         add_object_combobox(object)
@@ -307,7 +329,7 @@ class Handler:
         chooser.show()
 
     def on_save_file(self, chooser):
-        obj_module.write_obj(chooser.get_filename(), get_active_object())
+        obj_module.write(chooser.get_filename(), get_active_object())
         chooser.hide()
 
     def on_edit_points_combobox_change(self, component):
@@ -394,8 +416,9 @@ def clear_object_combobox():
 
 def update_point_combobox(object):
     clear_point_combobox()
-    for point in object.get_points():
-        points_combobox.append_text(point.to_string())
+    for segment in object.get_segments():
+        for point in segment:
+            points_combobox.append_text(point.to_string())
     points_combobox.set_active(0)
 
 
@@ -406,8 +429,10 @@ def clear_point_combobox():
 
 def update_edit_points_combobox(object):
     clear_edit_points_combobox()
-    for point in object.get_points():
-        edit_points_combobox.append_text(point.to_string())
+    for segment in object.get_segments():
+        for point in segment:
+            edit_points_combobox.append_text(point.to_string())
+
     edit_points_combobox.set_active(0)
 
 
@@ -416,7 +441,7 @@ def clear_edit_points_combobox():
 
 
 def add_object_combobox(object):
-    object_combobox.append_text(object.get_name())
+    object_combobox.append_text(object.name())
     object_combobox.set_active(object_combobox.get_active() + 1)
 
 
@@ -507,6 +532,7 @@ def validate_creation_curve():
         return False
     return True
 
+
 def get_curve_type():
     radioButtonHermite = gtkBuilder.get_object('idRadioHermite')
     radioButtonBezier = gtkBuilder.get_object('idRadioBezier')
@@ -518,6 +544,7 @@ def get_curve_type():
         return "BEZIER"
     else:
         return "BSPLINE"
+
 
 def get_center_rotate():
     radioButtonRotationWorld = gtkBuilder.get_object('idRotationWorld')
@@ -562,25 +589,32 @@ def get_step():
 def draw(object):
     ctx = cairo.Context(surface)
     ctx.set_line_width(1)
+    ctx.set_source_rgba(1, 1, 1, 0.3)
 
-    if object.object_type() == "POINT":
-        point = object.first_point()
-        transformed_point = viewport.transform(point.x(), point.y(), window)
+    for wireframe in object.wireframes():
+        for line in wireframe.lines():
+            p1 = viewport.transform(line.p1().x(), line.p1().y(), window)
+            p2 = viewport.transform(line.p2().x(), line.p2().y(), window)
 
-        ctx.arc(transformed_point.x(), transformed_point.y(), 0.5, 0, 2 * math.pi)
-    else:
-        if object.object_type() == "WIREFRAME":
-            for point in object.draw_points():
-                transformed_point = viewport.transform(point.x(), point.y(), window)
-                ctx.line_to(transformed_point.x(), transformed_point.y())
+            ctx.move_to(p1.x(), p1.y())
+            ctx.line_to(p2.x(), p2.y())
+            ctx.stroke()
 
-    ctx.stroke()
+        ctx.new_path()
 
+def init_examples():
+    cube = examples.cube_obj()
+    bezier_surface = examples.bezier_surface_obj()
+    window.add_object(cube)
+    window.add_object(bezier_surface)
+    viewport.add_object(cube)
+    viewport.add_object(bezier_surface)
+    add_object_combobox(cube)
+    add_object_combobox(bezier_surface)
 
 def clear_surface():
     global surface
     cr = cairo.Context(surface)
-    cr.set_source_rgb(255, 255, 255)
     cr.paint()
     del cr
 
@@ -590,40 +624,4 @@ def run():
     window_widget.show_all()
     Gtk.main()
 
-
-window.add_object(examples.square())
-window.add_object(examples.line())
-window.add_object(examples.curve_bezier())
-window.add_object(examples.curve_hermite())
-window.add_object(examples.curve_bspline_fwd_diff())
-viewport.add_object(examples.square())
-viewport.add_object(examples.line())
-viewport.add_object(examples.curve_bezier())
-viewport.add_object(examples.curve_hermite())
-viewport.add_object(examples.curve_bspline_fwd_diff())
-add_object_combobox(examples.square())
-add_object_combobox(examples.line())
-add_object_combobox(examples.curve_bezier())
-add_object_combobox(examples.curve_hermite())
-add_object_combobox(examples.curve_bspline_fwd_diff())
-
-# Redraw the screen from the surface
-# def draw_cb(wid, cr):
-#     global surface
-#     cr.set_source_surface(surface, 0, 0)
-#     cr.paint()
-#     return False
-
-# class Handler:
-#     # Function that will be called when the ok button is pressed
-#     def btn_ok_clicked_cb(self, btn):
-#         cr = cairo.Context(surface)
-#         cr.move_to(200, 100)
-#         cr.line_to(300, 50)
-#         cr.stroke()
-#         window_widget.queue_draw()
-
-
-# drawing_area = gtkBuilder.get_object('drawing_area')
-# drawing_area.connect('draw', draw_cb)
-# drawing_area.connect('configure-event', configure_event_cb)
+init_examples()

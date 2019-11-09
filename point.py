@@ -1,24 +1,36 @@
 import numpy as np
+import transformations
 
 
 class Point:
-    def __init__(self, x, y, z):
-        self.__teste123 = x
-        self.coordinate = np.array([x, y, z, 1])
+    def __init__(self, x, y, z, id=-1):
+        self._id = id
+        self._coordinate = np.array([x, y, z, 1])
+
+    def id(self):
+        return self._id
 
     def x(self):
-        return self.coordinate[0]
+        return self._coordinate[0]
 
     def y(self):
-        return self.coordinate[1]
+        return self._coordinate[1]
 
     def z(self):
-        return self.coordinate[2]
+        return self._coordinate[2]
 
-    def to_string(self):
+    def coordinate(self):
+        return self._coordinate
+
+    def transform(self, transformation):
+        self._coordinate = transformations.concat(self._coordinate, transformation)
+        return self
+
+    def update(self, coordinate):
+        self._coordinate = coordinate
+
+    def str(self):
         return "[" + str(self.x()) + \
                ", " + str(self.y()) + \
                ", " + str(self.z()) + "]"
 
-    def to_array(self):
-        return self.coordinate

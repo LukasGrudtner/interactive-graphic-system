@@ -3,71 +3,88 @@ from bezier import Bezier
 from hermite import Hermite
 from bspline import BSpline
 from wireframe import Wireframe
+from object import Object
 import settings
 
 
-class Curve(Wireframe):
-    def __init__(self):
-        super(Curve, self).__init__()
+class Curve:
+    def __init__(self, name="", points=None):
+        self._name = name
+        if points is None:
+            points = []
+        self._points = points
 
-    def get_points(self):
-        return self.draw_points()
+    def add_point(self, x, y, z):
+        self._points.append(Point(x, y, z))
 
-    def to_wireframe(self):
+    def size(self):
+        return len(self._points)
+
+    def to_object(self):
         wireframe = Wireframe()
-        wireframe.set_name(self.get_name())
-        wireframe.set_points(self.draw_points())
-        return wireframe
+        points = self.build()
+        self.connect_points(points, wireframe)
+
+        object = Object(self._name)
+        object.add(wireframe)
+
+        return object
+
+    def connect_points(self, points, wireframe):
+        previous = points[0]
+        wireframe.add_point(previous.x(), previous.y(), previous.z())
+
+        for i in range(1, len(points)):
+            current = points[i]
+            current = wireframe.add_point(current.x(), current.y(), current.z())
+            wireframe.line(previous, current)
+            previous = current
+
+    def build(self):
+        pass
 
 
 class CurveBezier(Curve):
-    def __init__(self):
-        super(CurveBezier, self).__init__()
+    def __init__(self, name="", points=None):
+        super(CurveBezier, self).__init__(name, points)
 
-    def draw_points(self):
-        counter = 0
-        curve_points = []
-        while counter + 4 <= self.n_points():
-            bezier = Bezier(self.points()[counter:counter + 4])
-            curve_points += bezier.generate_points()
+    def build(self):
+        counter, points = 0, []
+        while counter + 4 <= self.size():
+            bezier = Bezier(self._points[counter:counter + 4])
+            points += bezier.build()
             counter += 3
-        return curve_points
+        return points
 
 
 class CurveHermite(Curve):
-    def __init__(self):
-        super(CurveHermite, self).__init__()
+    def __init__(self, name="", points=None):
+        super(CurveHermite, self).__init__(name, points)
 
-    def draw_points(self):
-        counter = 0
-        curve_points = []
+    def build(self):
+        counter, points = 0, []
 
-        hermite = Hermite(self.points()[0:4])
-        curve_points += hermite.generate_points()
+        hermite = Hermite(self._points[0:4])
+        points += hermite.build()
         counter += 4
 
-        while counter < self.n_points():
+        while counter < self.size():
             hermite = Hermite(
-                [self.points()[counter - 1], self.points()[counter], self.points()[counter - 2], self.points()[counter + 1]])
-            curve_points += hermite.generate_points()
+                [self._points[counter - 1], self._points[counter], self._points[counter - 2],
+                 self._points[counter + 1]])
+            points += hermite.build()
             counter += 2
-        return curve_points
+        return points
 
 
 class CurveBSpline(Curve):
-    def __init__(self):
-        super(CurveBSpline, self).__init__()
+    def __init__(self, name="", points=None):
+        super(CurveBSpline, self).__init__(name, points)
 
-    def get_points(self):
-        return self.draw_points()
-
-    def draw_points(self):
-        counter = 0
-        curve_points = []
-
-        while counter + 4 <= self.n_points():
-            bspline = BSpline(self.points()[counter:counter + 4])
-            curve_points += bspline.generate_points(settings.FWD_DIFF_STEPS)
+    def build(self):
+        counter, points = 0, []
+        while counter + 4 <= self.size():
+            bspline = BSpline(self._points[counter:counter + 4])
+            points += bspline.build(settings.FWD_DIFF_STEPS)
             counter += 1
-
-        return curve_points
+        return points

@@ -43,7 +43,7 @@ class Hermite:
         fz = self.T() * self.M() * self.Gz()
         return fz[0]
 
-    def generate_points(self):
+    def build(self):
         fx = self.fx()
         fy = self.fy()
         fz = self.fz()

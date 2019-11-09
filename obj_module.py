@@ -1,34 +1,68 @@
 from wireframe import Wireframe
+from object import Object
 
 VERTEX_DIRECTIVE = 'v'
 NAME_DIRECTIVE = 'o'
+LINE_DIRECTIVE = 'l'
 
 
-def read_obj(file):
+def read(file):
     file = open(file, 'r')
-    object = Wireframe()
+    object = Object()
 
+    lines = []
     for line in file:
-        _handle_line(line.split(" "), object)
+        lines.append(line)
 
-    file.close()
+    it = 0
+    while it < len(lines):
+        if lines[it].split()[0] == NAME_DIRECTIVE:
+            object = Object(str(lines[it].split()[1]).strip())
+            points = []
+            it += 1
+            while it < len(lines):
+                if lines[it].split()[0] == VERTEX_DIRECTIVE:
+                    wireframe = Wireframe()
+                    object.add(wireframe)
+                    while it < len(lines):
+                        if lines[it].split()[0] == VERTEX_DIRECTIVE:
+                            points.append(wireframe.add_point(float(lines[it].split()[1]), float(lines[it].split()[2]),
+                                                              float(lines[it].split()[3])))
+                            it += 1
+                        else:
+                            break
+
+                if lines[it].split()[0] == LINE_DIRECTIVE:
+                    while it < len(lines):
+                        if lines[it].split()[0] == LINE_DIRECTIVE:
+                            wireframe.line(wireframe.get_point_by_id(int(lines[it].split()[1])),
+                                           wireframe.get_point_by_id(int(lines[it].split()[2])))
+                            it += 1
+                        else:
+                            break
     return object
 
-
-def _handle_line(line, object):
-    if len(line) > 0:
-        if line[0] == NAME_DIRECTIVE:
-            object.set_name(str(line[1]).strip())
-        elif line[0] == VERTEX_DIRECTIVE:
-            object.add_point(float(line[1]), float(line[2]), float(line[3]))
-
-
-def write_obj(file, object):
+def write(file, object):
     file = open(file, 'w+')
-    file.write("o " + object.get_name() + "\n")
-    for point in object.get_points():
-        file.write("v ")
-        file.write(str(float(point.x())) + " ")
-        file.write(str(float(point.y())) + " ")
-        file.write(str(float(point.z())) + "\n")
+    file.write(NAME_DIRECTIVE + ' ' + object.name() + '\n')
+
+    for wireframe in object.wireframes():
+        _write_points(file, wireframe.points())
+        _write_lines(file, wireframe.lines())
+
     file.close()
+
+
+def _write_points(file, points):
+    for point in points:
+        file.write(VERTEX_DIRECTIVE + ' ')
+        file.write(str(float(point.x())) + ' ')
+        file.write(str(float(point.y())) + ' ')
+        file.write(str(float(point.z())) + '\n')
+
+
+def _write_lines(file, lines):
+    for line in lines:
+        file.write(LINE_DIRECTIVE + ' ')
+        file.write(str(line.p1().id()) + ' ')
+        file.write(str(line.p2().id()) + '\n')
