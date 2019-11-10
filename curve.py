@@ -1,7 +1,7 @@
 from point import Point
-from bezier import Bezier
-from hermite import Hermite
-from bspline import BSpline
+from methods.simple.bezier import BezierParametric, BezierForwardDifferences
+from methods.simple.hermite import HermiteParametric, HermiteForwardDifferences
+from methods.simple.bspline import BSplineParametric, BSplineForwardDifferences
 from wireframe import Wireframe
 from object import Object
 import settings
@@ -30,7 +30,8 @@ class Curve:
 
         return object
 
-    def connect_points(self, points, wireframe):
+    @staticmethod
+    def connect_points(points, wireframe):
         previous = points[0]
         wireframe.add_point(previous.x(), previous.y(), previous.z())
 
@@ -40,36 +41,46 @@ class Curve:
             wireframe.line(previous, current)
             previous = current
 
-    def build(self):
-        pass
 
-
-class CurveBezier(Curve):
+class CurveBezierParametric(Curve):
     def __init__(self, name="", points=None):
-        super(CurveBezier, self).__init__(name, points)
+        super(CurveBezierParametric, self).__init__(name, points)
 
     def build(self):
         counter, points = 0, []
         while counter + 4 <= self.size():
-            bezier = Bezier(self._points[counter:counter + 4])
+            bezier = BezierParametric(self._points[counter:counter + 4])
             points += bezier.build()
             counter += 3
         return points
 
 
-class CurveHermite(Curve):
+class CurveBezierForwardDifferences(Curve):
     def __init__(self, name="", points=None):
-        super(CurveHermite, self).__init__(name, points)
+        super(CurveBezierForwardDifferences, self).__init__(name, points)
+
+    def build(self):
+        counter, points = 0, []
+        while counter + 4 <= self.size():
+            bezier = BezierForwardDifferences(self._points[counter:counter + 4], settings.FWD_DIFF_STEPS)
+            points += bezier.build()
+            counter += 3
+        return points
+
+
+class CurveHermiteParametric(Curve):
+    def __init__(self, name="", points=None):
+        super(CurveHermiteParametric, self).__init__(name, points)
 
     def build(self):
         counter, points = 0, []
 
-        hermite = Hermite(self._points[0:4])
+        hermite = HermiteParametric(self._points[0:4])
         points += hermite.build()
         counter += 4
 
         while counter < self.size():
-            hermite = Hermite(
+            hermite = HermiteParametric(
                 [self._points[counter - 1], self._points[counter], self._points[counter - 2],
                  self._points[counter + 1]])
             points += hermite.build()
@@ -77,14 +88,47 @@ class CurveHermite(Curve):
         return points
 
 
-class CurveBSpline(Curve):
+class CurveHermiteForwardDifferences(Curve):
     def __init__(self, name="", points=None):
-        super(CurveBSpline, self).__init__(name, points)
+        super(CurveHermiteForwardDifferences, self).__init__(name, points)
+
+    def build(self):
+        counter, points = 0, []
+
+        hermite = HermiteParametric(self._points[0:4])
+        points += hermite.build()
+        counter += 4
+
+        while counter < self.size():
+            hermite = HermiteForwardDifferences(
+                [self._points[counter - 1], self._points[counter], self._points[counter - 2],
+                 self._points[counter + 1]], settings.FWD_DIFF_STEPS)
+            points += hermite.build()
+            counter += 2
+        return points
+
+
+class CurveBSplineParametric(Curve):
+    def __init__(self, name="", points=None):
+        super(CurveBSplineParametric, self).__init__(name, points)
 
     def build(self):
         counter, points = 0, []
         while counter + 4 <= self.size():
-            bspline = BSpline(self._points[counter:counter + 4])
-            points += bspline.build(settings.FWD_DIFF_STEPS)
+            bspline = BSplineParametric(self._points[counter:counter + 4], settings.FWD_DIFF_STEPS)
+            points += bspline.build
+            counter += 1
+        return points
+
+
+class CurveBSplineForwardDifferences(Curve):
+    def __init__(self, name="", points=None):
+        super(CurveBSplineForwardDifferences, self).__init__(name, points)
+
+    def build(self):
+        counter, points = 0, []
+        while counter + 4 <= self.size():
+            bspline = BSplineForwardDifferences(self._points[counter:counter + 4], settings.FWD_DIFF_STEPS)
+            points += bspline.build()
             counter += 1
         return points

@@ -1,8 +1,9 @@
 from wireframe import Wireframe
-from curve import Curve, CurveBezier, CurveHermite, CurveBSpline
-from surface import SurfaceBezier
+from curve import *
+from surface import SurfaceBezier, SurfaceBSpline
 from object import Object
 import obj_module as obj
+
 
 def square():
     wireframe = Wireframe()
@@ -20,7 +21,6 @@ def square():
     square.add(wireframe)
 
     return square
-
 
 
 def cube():
@@ -52,8 +52,10 @@ def cube():
 
     return cube
 
+
 def cube_obj():
     return obj.read('examples/cube.obj')
+
 
 def line():
     wireframe = Wireframe()
@@ -78,8 +80,9 @@ def line():
 
     return line
 
+
 def curve_bezier():
-    bezier = CurveBezier('curve_bezier')
+    bezier = CurveBezierParametric('curve_bezier')
     bezier.add_point(0, 0, 1)
     bezier.add_point(40, 0, 1)
     bezier.add_point(30, 50, 1)
@@ -91,18 +94,18 @@ def curve_bezier():
 
 
 def curve_hermite():
-    hermite = CurveHermite('curve_hermite')
-    hermite.add_point(0, 40, 1)
-    hermite.add_point(80, 0, 1)
-    hermite.add_point(80, 0, 1)
-    hermite.add_point(40, 0, 1)
-    hermite.add_point(0, 40, 1)
-    hermite.add_point(80, 0, 1)
+    hermite = CurveHermiteParametric('curve_hermite')
+    hermite.add_point(0, 4, 1)
+    hermite.add_point(8, 0, 1)
+    hermite.add_point(8, 0, 1)
+    hermite.add_point(4, 0, 1)
+    hermite.add_point(0, 4, 1)
+    hermite.add_point(8, 0, 1)
     return hermite.to_object()
 
 
 def curve_bspline():
-    bspline = CurveBSpline('curve_bspline')
+    bspline = CurveBSplineForwardDifferences('curve_bspline')
     bspline.add_point(40, 0, 1)
     bspline.add_point(0, 20, 1)
     bspline.add_point(0, 60, 1)
@@ -135,5 +138,62 @@ def bezier_surface():
     bezier_surface.add_point(10, 9, 0)
     return bezier_surface.to_object()
 
+
 def bezier_surface_obj():
     return obj.read('examples/bezier_surface.obj')
+
+
+def bspline_surface():
+    bspline_surface = SurfaceBSpline('bspline_surface')
+    bspline_surface.add_point(-100, 300, 100)
+    bspline_surface.add_point(0, 300, 100)
+    bspline_surface.add_point(100, 300, 100)
+    bspline_surface.add_point(200, 300, 100)
+    bspline_surface.add_point(-100, 300, 200)
+    bspline_surface.add_point(0, -200, 200)
+    bspline_surface.add_point(100, -200, 200)
+    bspline_surface.add_point(200, 300, 200)
+    bspline_surface.add_point(-100, 300, 300)
+    bspline_surface.add_point(0, -200, 300)
+    bspline_surface.add_point(100, -200, 300)
+    bspline_surface.add_point(200, 300, 300)
+    bspline_surface.add_point(-100, 300, 400)
+    bspline_surface.add_point(0, 300, 400)
+    bspline_surface.add_point(100, 300, 400)
+    bspline_surface.add_point(200, 300, 400)
+    return bspline_surface.to_object()
+
+def bspline_surface_obj():
+    return obj.read('examples/bspline_surface.obj')
+
+def bspline_surface_25pts():
+    bspline_surface = SurfaceBSpline('bspline_surface')
+    bspline_surface.add_point(-100, 300, 100)
+    bspline_surface.add_point(0, 300, 100)
+    bspline_surface.add_point(100, 300, 100)
+    bspline_surface.add_point(200, 300, 100)
+    bspline_surface.add_point(-100, 300, 200)
+    bspline_surface.add_point(0, -200, 200)
+    bspline_surface.add_point(100, -200, 200)
+    bspline_surface.add_point(200, 300, 200)
+    bspline_surface.add_point(-100, 300, 300)
+    bspline_surface.add_point(0, -200, 300)
+    bspline_surface.add_point(100, -200, 300)
+    bspline_surface.add_point(200, 300, 300)
+    bspline_surface.add_point(-100, 300, 400)
+    bspline_surface.add_point(0, 300, 400)
+    bspline_surface.add_point(100, 300, 400)
+    bspline_surface.add_point(200, 300, 400)
+    bspline_surface.add_point(-100, 300, 300)
+    bspline_surface.add_point(0, -200, 300)
+    bspline_surface.add_point(100, -200, 300)
+    bspline_surface.add_point(200, 300, 300)
+    bspline_surface.add_point(-100, 300, 200)
+    bspline_surface.add_point(0, -200, 200)
+    bspline_surface.add_point(100, -200, 200)
+    bspline_surface.add_point(200, 300, 200)
+    bspline_surface.add_point(200, 300, 100)
+    return bspline_surface.to_object()
+
+def bspline_surface_25pts_obj():
+    return obj.read('examples/bspline_surface_25pts.obj')

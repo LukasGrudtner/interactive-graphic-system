@@ -1,7 +1,9 @@
 from wireframe import Wireframe
-from bezier_bicubic_surface import BezierBicubicSurface
+from methods.bicubic.bicubic_bezier import BicubicBezierParametric
+from methods.bicubic.bicubic_bspline import *
 from point import Point
 from object import Object
+import settings
 
 
 class Surface:
@@ -45,14 +47,51 @@ class SurfaceBezier(Surface):
         super(SurfaceBezier, self).__init__(name, points)
 
     def build(self):
-        bezier = BezierBicubicSurface(self._points)
-        curves = bezier.build()
         wireframes = []
 
-        for curve in curves:
-            wireframe = Wireframe()
-            for point in curve:
-                wireframe.add_point(point.x(), point.y(), point.z())
-            wireframes.append(wireframe)
+        i = 0
+        while i+16 <= self.size():
+            list = self._points[i:i+16]
+            i += 16
+
+            bezier = BicubicBezierParametric(list)
+            curves = bezier.build()
+
+            for curve in curves:
+                wireframe = Wireframe()
+                for point in curve:
+                    wireframe.add_point(point.x(), point.y(), point.z())
+                wireframes.append(wireframe)
+
+        return wireframes
+
+
+class SurfaceBSpline(Surface):
+    def __init__(self, name="", points=None):
+        super(SurfaceBSpline, self).__init__(name, points)
+
+    def build(self):
+        wireframes = []
+
+        i = 0
+        while i + 16 <= self.size():
+            list = self._points[i:i+16]
+            i += 1
+
+            bspline = BicubicBSplineForwardDifferences(list, settings.FWD_DIFF_SURFACE_N, settings.FWD_DIFF_SURFACE_N)
+            curves = bspline.build()
+
+            wireframes = []
+            for curve in curves[0]:
+                wireframe = Wireframe()
+                for point in curve:
+                    wireframe.add_point(point.x(), point.y(), point.z())
+                wireframes.append(wireframe)
+
+            for curve in curves[1]:
+                wireframe = Wireframe()
+                for point in curve:
+                    wireframe.add_point(point.x(), point.y(), point.z())
+                wireframes.append(wireframe)
 
         return wireframes

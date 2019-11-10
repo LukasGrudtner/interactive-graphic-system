@@ -2,7 +2,7 @@ import numpy as np
 from wireframe import Wireframe
 import transformations
 from point import Point
-from curve import Curve, CurveBezier, CurveHermite, CurveBSpline
+from curve import *
 from surface import SurfaceBezier
 
 
@@ -50,37 +50,31 @@ class Window:
         abs_step = (self.y_max() - self.y_min()) * (step / 100)
         panning_up = transformations.translate(0, -abs_step, 0)
         self._matrix = transformations.concat(self._matrix, panning_up)
-        # self.transform(panning_up)
 
     def panning_down(self, step):
         abs_step = (self.y_max() - self.y_min()) * (step / 100)
         panning_down = transformations.translate(0, abs_step, 0)
         self._matrix = transformations.concat(self._matrix, panning_down)
-        # self.transform(panning_down)
 
     def panning_right(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
         panning_right = transformations.translate(-abs_step, 0, 0)
         self._matrix = transformations.concat(self._matrix, panning_right)
-        # self.transform(panning_right)
 
     def panning_left(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
         panning_left = transformations.translate(abs_step, 0, 0)
         self._matrix = transformations.concat(self._matrix, panning_left)
-        # self.transform(panning_left)
 
     def panning_forward(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
         panning_forward = transformations.translate(0, 0, abs_step)
         self._matrix = transformations.concat(self._matrix, panning_forward)
-        # self.transform(panning_forward)
 
     def panning_back(self, step):
         abs_step = (self.x_max() - self.x_min()) * (step / 100)
         panning_back = transformations.translate(0, 0, -abs_step)
         self._matrix = transformations.concat(self._matrix, panning_back)
-        # self.transform(panning_back)
 
     def zoom(self, step):
         scale = 1 + step / 100
@@ -95,8 +89,6 @@ class Window:
 
         self._matrix = transformations.concat(
             transformations.concat(transformations.concat(self._matrix, first_translate), zoom), last_translate)
-        # transformation = transformations.concat(transformations.concat(first_translate, zoom), last_translate)
-        # self.transform(transformation)
 
     def rotate_x(self, degrees):
         self._rotate(transformations.rotate_x(degrees))
@@ -114,12 +106,6 @@ class Window:
 
         self._matrix = transformations.concat(
             transformations.concat(transformations.concat(self._matrix, first_translate), rotate), last_translate)
-        # transformation = transformations.concat(transformations.concat(first_translate, rotate), last_translate)
-        # self.transform(transformation)
-
-    # def transform(self, transformation):
-    #     for object in self._objects:
-    #         object.transform(transformation)
 
     def transform(self, object):
         return object.clone().transform(self._matrix)

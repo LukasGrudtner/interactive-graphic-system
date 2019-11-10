@@ -5,6 +5,7 @@ import examples
 import settings as default
 import obj_module
 import multiprocessing as mp
+from surface import SurfaceBezier
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -117,16 +118,28 @@ class Handler:
 
     def create_bezier_bicubic_surface(self):
         name = gtkBuilder.get_object('idBezierBicubicSurfaceName').get_text()
-        points = []
+        # points = []
+        # for i in range(16):
+        #     cellX = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'X')
+        #     cellY = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'Y')
+        #     cellZ = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'Z')
+        #     points.append(Point(float(cellX.get_text()), float(cellY.get_text()), float(cellZ.get_text())))
+
+        object = SurfaceBezier(name, temporary_points).to_object()
+        viewport.add_object(object)
+        add_object_combobox(object)
+        temporary_points.clear()
+
+    def on_add_matrix_surface_bezier(self, component):
         for i in range(16):
             cellX = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'X')
             cellY = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'Y')
             cellZ = gtkBuilder.get_object('idBezierBicubicSurfaceCell' + str(i + 1) + 'Z')
-            points.append(Point(float(cellX.get_text()), float(cellY.get_text()), float(cellZ.get_text())))
+            temporary_points.append(Point(float(cellX.get_text()), float(cellY.get_text()), float(cellZ.get_text())))
 
-        object = window.create_bezier_bicubic_surface(name, points)
-        viewport.add_object(object)
-        add_object_combobox(object)
+            cellX.set_text('0')
+            cellY.set_text('0')
+            cellZ.set_text('0')
 
     def on_translate_right(self, component):
         get_active_object().translate(default.TRANSLATE_OFFSET, 0, 0)
@@ -364,6 +377,7 @@ class Handler:
 
         for object in viewport.display_file():
             draw(window.transform(object))
+            # draw(object)
 
         cr.paint()
         return False
@@ -418,7 +432,7 @@ def update_point_combobox(object):
     clear_point_combobox()
     for segment in object.get_segments():
         for point in segment:
-            points_combobox.append_text(point.to_string())
+            points_combobox.append_text(point.str())
     points_combobox.set_active(0)
 
 
@@ -431,7 +445,7 @@ def update_edit_points_combobox(object):
     clear_edit_points_combobox()
     for segment in object.get_segments():
         for point in segment:
-            edit_points_combobox.append_text(point.to_string())
+            edit_points_combobox.append_text(point.str())
 
     edit_points_combobox.set_active(0)
 
@@ -446,17 +460,17 @@ def add_object_combobox(object):
 
 
 def add_point_combobox(point):
-    points_combobox.append_text(point.to_string())
+    points_combobox.append_text(point.str())
     points_combobox.set_active(points_combobox.get_active() + 1)
 
 
 def add_point_curve_combobox(point):
-    curve_points_combobox.append_text(point.to_string())
+    curve_points_combobox.append_text(point.str())
     curve_points_combobox.set_active(curve_points_combobox.get_active() + 1)
 
 
 def add_point_edit_combobox(point):
-    edit_points_combobox.append_text(point.to_string())
+    edit_points_combobox.append_text(point.str())
     edit_points_combobox.set_active(edit_points_combobox.get_active() + 1)
 
 
@@ -603,14 +617,26 @@ def draw(object):
         ctx.new_path()
 
 def init_examples():
-    cube = examples.cube_obj()
-    bezier_surface = examples.bezier_surface_obj()
-    window.add_object(cube)
-    window.add_object(bezier_surface)
-    viewport.add_object(cube)
-    viewport.add_object(bezier_surface)
-    add_object_combobox(cube)
-    add_object_combobox(bezier_surface)
+    hermite = examples.curve_hermite()
+    # bezier = examples.curve_bezier()
+    # bezier_surface = examples.bezier_surface()
+    # bspline_surface = examples.bspline_surface()
+    # bspline_surace_25pts = examples.bspline_surface_25pts()
+    window.add_object(hermite)
+    # window.add_object(bezier_surface)
+    # window.add_object(bspline_surface)
+    # window.add_object(bspline_surace_25pts)
+    # window.add_object(bezier)
+    viewport.add_object(hermite)
+    # viewport.add_object(bezier_surface)
+    # viewport.add_object(bspline_surface)
+    # viewport.add_object(bspline_surace_25pts)
+    # viewport.add_object(bezier)
+    add_object_combobox(hermite)
+    # add_object_combobox(bezier_surface)
+    # add_object_combobox(bspline_surface)
+    # add_object_combobox(bspline_surace_25pts)
+    # add_object_combobox(bezier)
 
 def clear_surface():
     global surface
