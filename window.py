@@ -1,9 +1,6 @@
 import numpy as np
-from wireframe import Wireframe
-import transformations
-from point import Point
-from curve import *
-from surface import SurfaceBezier
+from methods import transformations
+from objects.curve import *
 
 
 class Window:

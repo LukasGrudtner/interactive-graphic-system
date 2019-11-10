@@ -1,8 +1,8 @@
-from wireframe import Wireframe
+from objects.wireframe import Wireframe
 from methods.bicubic.bicubic_bezier import BicubicBezierParametric
 from methods.bicubic.bicubic_bspline import *
-from point import Point
-from object import Object
+from objects.point import Point
+from objects.object import Object
 import settings
 
 

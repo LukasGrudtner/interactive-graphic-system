@@ -1,15 +1,13 @@
 import cairo
 import gi
-import math
-import examples
+from examples import examples
 import settings as default
-import obj_module
-import multiprocessing as mp
-from surface import SurfaceBezier
+from utils import obj_module
+from objects.surface import SurfaceBezier
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from point import Point
+from objects.point import Point
 from viewport import Viewport
 from window import Window
 

@@ -1,6 +1,6 @@
 from sympy import Matrix
 from copy import deepcopy
-from point import Point
+from objects.point import Point
 
 
 def E(delta):

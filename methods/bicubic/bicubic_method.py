@@ -1,8 +1,7 @@
 from sympy import Matrix
-from point import Point
+from objects.point import Point
 import numpy as np
-import forward_differences
-import parametric
+from methods import parametric, forward_differences
 
 
 class BicubicMethod:

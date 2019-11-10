@@ -1,8 +1,7 @@
-import transformations
-from point import Point
+from methods import transformations
+from objects.point import Point
 import multiprocessing as mp
 from copy import deepcopy
-import time
 
 
 class Object:

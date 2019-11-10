@@ -1,6 +1,6 @@
-import transformations
-from point import Point
-from line import Line
+from methods import transformations
+from objects.point import Point
+from objects.line import Line
 import _thread
 
 

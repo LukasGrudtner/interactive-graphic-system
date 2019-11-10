@@ -1,5 +1,5 @@
-from wireframe import Wireframe
-from object import Object
+from objects.wireframe import Wireframe
+from objects.object import Object
 
 VERTEX_DIRECTIVE = 'v'
 NAME_DIRECTIVE = 'o'

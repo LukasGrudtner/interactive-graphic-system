@@ -1,7 +1,6 @@
 from sympy import Matrix
-import parametric
-import forward_differences
-from point import Point
+from methods import parametric, forward_differences
+from objects.point import Point
 import numpy as np
 
 

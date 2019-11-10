@@ -1,8 +1,7 @@
-from wireframe import Wireframe
-from curve import *
-from surface import SurfaceBezier, SurfaceBSpline
-from object import Object
-import obj_module as obj
+from objects.curve import *
+from objects.surface import SurfaceBezier, SurfaceBSpline
+from objects.object import Object
+from utils import obj_module as obj
 
 
 def square():
@@ -47,14 +46,14 @@ def cube():
     wireframe.line(p6, p7)
     wireframe.line(p6, p8)
 
-    cube = Object('cube.obj')
+    cube = Object('cube.utils')
     cube.add(wireframe)
 
     return cube
 
 
 def cube_obj():
-    return obj.read('examples/cube.obj')
+    return obj.read('examples/cube.utils')
 
 
 def line():
@@ -140,7 +139,7 @@ def bezier_surface():
 
 
 def bezier_surface_obj():
-    return obj.read('examples/bezier_surface.obj')
+    return obj.read('examples/bezier_surface.utils')
 
 
 def bspline_surface():
@@ -164,7 +163,7 @@ def bspline_surface():
     return bspline_surface.to_object()
 
 def bspline_surface_obj():
-    return obj.read('examples/bspline_surface.obj')
+    return obj.read('examples/bspline_surface.utils')
 
 def bspline_surface_25pts():
     bspline_surface = SurfaceBSpline('bspline_surface')
@@ -196,4 +195,4 @@ def bspline_surface_25pts():
     return bspline_surface.to_object()
 
 def bspline_surface_25pts_obj():
-    return obj.read('examples/bspline_surface_25pts.obj')
+    return obj.read('examples/bspline_surface_25pts.utils')

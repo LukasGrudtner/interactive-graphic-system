@@ -1,5 +1,5 @@
 import numpy as np
-import transformations
+from methods import transformations
 
 
 class Point:

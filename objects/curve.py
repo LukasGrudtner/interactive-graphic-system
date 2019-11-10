@@ -1,9 +1,9 @@
-from point import Point
+from objects.point import Point
 from methods.simple.bezier import BezierParametric, BezierForwardDifferences
 from methods.simple.hermite import HermiteParametric, HermiteForwardDifferences
 from methods.simple.bspline import BSplineParametric, BSplineForwardDifferences
-from wireframe import Wireframe
-from object import Object
+from objects.wireframe import Wireframe
+from objects.object import Object
 import settings
 
 
@@ -115,7 +115,7 @@ class CurveBSplineParametric(Curve):
     def build(self):
         counter, points = 0, []
         while counter + 4 <= self.size():
-            bspline = BSplineParametric(self._points[counter:counter + 4], settings.FWD_DIFF_STEPS)
+            bspline = BSplineParametric(self._points[counter:counter + 4])
             points += bspline.build
             counter += 1
         return points
